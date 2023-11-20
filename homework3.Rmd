@@ -28,7 +28,7 @@ The `gss16` data set needs to be prepared prior to modelling. This is not an ass
 
 Create a new data frame called `gss16_advfront` that includes the variables `advfront`, `emailhr` (Number of hours spent on email weekly), `educ` (education level), `polviews` (political views) and `wrkstat` (working status). Remove any row that contains any `NA`s using the `drop_na()` command
 
-```{r}
+```{r advfront_selection}
 gss16_advfront <- gss16 %>%
   select(advfront, emailhr, educ, polviews, wrkstat) %>%
   drop_na()
@@ -43,7 +43,7 @@ The `advfront` variable contains responses to the question "Even if it brings no
 
 The following code does that this re-levelling:
 
-```{r}
+```{r advfront_relevel}
 gss16_advfront <- gss16_advfront %>%
   mutate(
     advfront = case_when(
@@ -65,7 +65,7 @@ You can do this in various ways. One option is to use the `str_detect()` functio
 
 The `polviews` variable contains information about the participant's political position within 7 categories ranging from `"Extremely liberal"` to `"Extrmly conservative"`. Here we wish to simplify the range of options to 3 categories - `"Conservative"` , `"Moderate"`, and `"Liberal"`. This is achieved via the following code:
 
-```{r}
+```{r polviews_relevel}
 gss16_advfront <- gss16_advfront %>%
   mutate(
     polviews = case_when(
@@ -89,7 +89,7 @@ a) Fit a linear regression model to predicting `emailhr` based on the `educ`. Fr
 
 b) Comment on the overall performance of the linear regression model. Support your statements with an appropriate data visualisation and model fit statistics.
 
-```{r}
+```{r ex1}
 educ_emailhr_fit <- linear_reg() %>%
   set_engine("lm") %>%
   fit(emailhr ~ educ, data = gss16_advfront)
@@ -137,7 +137,7 @@ The recipe (named `gss16_rec_1`) should contain the following steps for predicti
 
   - The model (named `gss16_mod_1`) should specify a model that is appropriate for the data as well as the computational engine.
 
-```{r}
+```{r logreg1}
 gss16_rec_1 <- recipe(advfront ~ educ, data = gss16_train) %>%
   step_dummy(all_nominal_predictors(), -all_outcomes())
 
@@ -159,7 +159,7 @@ I have chosen to use a logistic regression model because the response variable b
 
 a) Apply the workflow you defined earlier to the training dataset and named the model as `gss16_fit_1`. Display the resulting tibble containing the fitted model parameters. 
 
-```{r}
+```{r logfit1}
 gss16_fit_1 <- gss16_wflow_1 %>%
   fit(data = gss16_train) 
 
@@ -170,7 +170,7 @@ gss16_tidyfit_1
 
 b) Use the fitted models to predict the test data, plot the ROC curves for the predictions.
 
-```{r}
+```{r logroc1}
 gss16_pred_1 <- predict(gss16_fit_1, gss16_test, type = "prob") %>% bind_cols(gss16_test)
 gss16_pred_1
 
@@ -198,7 +198,7 @@ named as `gss16_fit_2`.
 
 Then use the fitted models to predict the test data, plot the ROC curve for the predictions for both models, and calculate the areas under the ROC curves.
 
-```{r}
+```{r logmod2}
 gss16_rec_2 <- recipe(advfront ~ polviews + wrkstat + educ, data = gss16_train) %>%
   step_dummy(all_nominal_predictors(), -all_outcomes())
 
