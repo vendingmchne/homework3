@@ -1,6 +1,6 @@
 ---
 title: "hw-03"
-author: "Your Name (S000000)"
+author: "Raven Callaghan (S2486713)"
 date: "`r Sys.Date()`"
 output: html_document
 ---
@@ -10,6 +10,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 
 library(tidyverse)
+library(tidymodels)
 ```
 
 
@@ -89,8 +90,27 @@ a) Fit a linear regression model to predicting `emailhr` based on the `educ`. Fr
 b) Comment on the overall performance of the linear regression model. Support your statements with an appropriate data visualisation and model fit statistics.
 
 ```{r}
+educ_emailhr_fit <- linear_reg() %>%
+  set_engine("lm") %>%
+  fit(emailhr ~ educ, data = gss16_advfront)
+educ_emailhr_fit
 
+
+educ_emailhr_augfit <- augment(educ_emailhr_fit$fit)
+ggplot(data = educ_emailhr_augfit, mapping = aes(x = .fitted, y = .resid)) +
+  geom_point(alpha = 0.4) +
+  geom_hline(yintercept = 0, color = "red") +
+  labs(x = "Prediction", y = "Residuals")
+
+  ggplot(data = gss16_advfront, mapping = aes(x = educ, y = emailhr)) + geom_jitter() + geom_smooth(method = "lm")
+
+glance(educ_emailhr_fit)$r.squared
 ```
+The formula for the linear regression model of education level against hours spent using email is (emailhr) = -2.7573 + 0.6854(educ). 
+
+This means that for every unit of education level increases, the number of weekly hours spent using email increases by 0.6854 hours. If someone were to have an education level of 0, they would by this linear model be expected to spend -2.7573 hours using their email weekly, which makes no sense in context as time cannot hold a negative value. 
+
+Looking at the visualisation of the residuals, there isn't a particularly clear and definite pattern, however it is clear that the magnitude of residuals is tending to increase with education level, which suggests that a linear model may not be the most effective method of modelling these two variables. In addition, the model has an r squared value of 0.02912, which means 2.912% of the variability in the emailhr values can be explained by the values in educ, which is not a lot. 
 
 ## Exercise 2: Create a workflow to fit a model
 
@@ -118,10 +138,22 @@ The recipe (named `gss16_rec_1`) should contain the following steps for predicti
   - The model (named `gss16_mod_1`) should specify a model that is appropriate for the data as well as the computational engine.
 
 ```{r}
+gss16_rec_1 <- recipe(advfront ~ educ, data = gss16_train) %>%
+  step_dummy(all_nominal_predictors(), -all_outcomes())
+
+gss16_mod_1 <- logistic_reg() %>%
+  set_engine("glm")
+
+gss16_wflow_1 <- workflow() %>%
+  add_model(gss16_mod_1) %>%
+  add_recipe(gss16_rec_1)
+gss16_wflow_1
 
 ```
 
 b) Explain why you have chosen the model that you have selected.
+
+I have chosen to use a logistic regression model because the response variable being modelled is a categorical variable which can be expressed as a factor (of Agree and Disagree), whereas a linear regression model would be more appropriate if the data were numerically expressed. 
 
 ## Exercise 3: Logistic regression with single predictor
 
