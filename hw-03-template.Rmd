@@ -160,12 +160,24 @@ I have chosen to use a logistic regression model because the response variable b
 a) Apply the workflow you defined earlier to the training dataset and named the model as `gss16_fit_1`. Display the resulting tibble containing the fitted model parameters. 
 
 ```{r}
+gss16_fit_1 <- gss16_wflow_1 %>%
+  fit(data = gss16_train) 
 
+gss16_tidyfit_1 <- gss16_fit_1 %>% tidy()
+
+gss16_tidyfit_1
 ```
 
 b) Use the fitted models to predict the test data, plot the ROC curves for the predictions.
 
 ```{r}
+gss16_pred_1 <- predict(gss16_fit_1, gss16_test, type = "prob") %>% bind_cols(gss16_test)
+gss16_pred_1
+
+gss16_roccurve <- gss16_pred_1 %>% roc_curve(
+  truth = advfront, .pred_Agree, event_level = "second") %>%
+  autoplot()
+gss16_roccurve
 
 ```
 
