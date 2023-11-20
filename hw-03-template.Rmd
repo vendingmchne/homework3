@@ -174,10 +174,10 @@ b) Use the fitted models to predict the test data, plot the ROC curves for the p
 gss16_pred_1 <- predict(gss16_fit_1, gss16_test, type = "prob") %>% bind_cols(gss16_test)
 gss16_pred_1
 
-gss16_roccurve <- gss16_pred_1 %>% roc_curve(
+gss16_roccurve_1 <- gss16_pred_1 %>% roc_curve(
   truth = advfront, .pred_Agree, event_level = "second") %>%
   autoplot()
-gss16_roccurve
+gss16_roccurve_1
 
 ```
 
@@ -199,7 +199,34 @@ named as `gss16_fit_2`.
 Then use the fitted models to predict the test data, plot the ROC curve for the predictions for both models, and calculate the areas under the ROC curves.
 
 ```{r}
+gss16_rec_2 <- recipe(advfront ~ polviews + wrkstat + educ, data = gss16_train) %>%
+  step_dummy(all_nominal_predictors(), -all_outcomes())
 
+gss16_mod_2 <- logistic_reg() %>%
+  set_engine("glm")
+
+gss16_wflow_2 <- workflow() %>%
+  add_model(gss16_mod_2) %>%
+  add_recipe(gss16_rec_2)
+
+gss16_fit_2 <- gss16_wflow_2 %>% fit(data = gss16_train)
+gss16_tidyfit_2 <- gss16_fit_2 %>% tidy()
+
+gss16_pred_2 <- predict(gss16_fit_2, gss16_test, type = "prob") %>% bind_cols(gss16_test)
+gss16_pred_2
+
+gss16_roccurve_2 <- gss16_pred_2 %>% roc_curve(
+  truth = advfront, .pred_Agree, event_level = "second") %>%
+  autoplot()
+
+gss16_roccurve_1
+gss16_roccurve_2
+
+gss16_auc_1 <- gss16_pred_1 %>% roc_auc(
+  truth = advfront, .pred_Agree, event_level = "second") %>% print()
+
+gss16_auc_2 <- gss16_pred_2 %>% roc_auc(
+  truth = advfront, .pred_Agree, event_level = "second") %>% print()
 ```
 
 b) Comment on which model performs better 
@@ -209,9 +236,7 @@ b) Comment on which model performs better
   
 Explain your reasoning.
 
-```{r}
-
-```
+Model 1's area under the ROC curve is larger than the area under the ROC curve for Model 2. This means that its predictions are more likely to be true than those of Model 2. This means that education level alone is a better predictor than the combination of education level, political views and working status.
 
 
 
